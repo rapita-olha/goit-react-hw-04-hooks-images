@@ -6,7 +6,7 @@ export default function ErrorView() {
       <img
         src={errorImg}
         alt="welcome"
-        width={600}
+        width={700}
         style={{ margin: '0 auto' }}
       />
     </div>

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
@@ -7,60 +7,67 @@ import s from 'components/Modal/Modal.module.css';
 
 const modalRoot = document.querySelector('#modal-root');
 
-class Modal extends Component {
-  static propTypes = {
-    imgIdx: PropTypes.number.isRequired,
-    closeModal: PropTypes.func.isRequired,
-    handleGalleryNav: PropTypes.func.isRequired,
-  };
+export default function Modal({
+  closeModal,
+  handleGalleryNav,
+  imgIdx,
+  children,
+  images,
+}) {
+  const { modal, overlay } = s;
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleGalleryNav);
-  }
+  useEffect(() => {
+    window.addEventListener('keydown', onGalleryNav);
+    return () => {
+      window.removeEventListener('keydown', onGalleryNav);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleGalleryNav);
-  }
-
-  handleGalleryNav = ({ code }) => {
-    const { imgIdx, closeModal, handleGalleryNav } = this.props;
-
+  function onGalleryNav({ code }) {
     switch (code) {
       case 'Escape':
         closeModal();
         break;
 
       case 'ArrowRight':
-        handleGalleryNav(imgIdx + 1);
+        if (imgIdx >= images.length - 1) {
+          handleGalleryNav((imgIdx = 0));
+        } else {
+          handleGalleryNav(++imgIdx);
+        }
         break;
 
       case 'ArrowLeft':
-        handleGalleryNav(imgIdx - 1);
+        if (imgIdx <= 0) {
+          handleGalleryNav((imgIdx = images.length - 1));
+        } else {
+          handleGalleryNav(--imgIdx);
+        }
         break;
 
       default:
         toast.info('Press ESC to exit');
     }
-  };
+  }
 
-  handleBackdropClick = ({ target, currentTarget }) => {
-    const { closeModal } = this.props;
+  const handleBackdropClick = ({ target, currentTarget }) => {
     if (target === currentTarget) {
       closeModal();
     }
   };
 
-  render() {
-    const { modal, overlay } = s;
-    const { children } = this.props;
-
-    return createPortal(
-      <div className={overlay} onClick={this.handleBackdropClick}>
-        <div className={modal}>{children}</div>
-      </div>,
-      modalRoot,
-    );
-  }
+  return createPortal(
+    <div className={overlay} onClick={handleBackdropClick}>
+      <div className={modal}>{children}</div>
+    </div>,
+    modalRoot,
+  );
 }
 
-export default Modal;
+Modal.propTypes = {
+  closeModal: PropTypes.func.isRequired,
+  handleGalleryNav: PropTypes.func.isRequired,
+  imgIdx: PropTypes.number.isRequired,
+  images: PropTypes.arrayOf(PropTypes.shape).isRequired,
+};

@@ -1,37 +1,31 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import ImageGalleryItem from 'components/ImageGallery/ImageGalleryItem';
 import s from 'components/ImageGallery/ImageGallery.module.css';
 
 import PropTypes from 'prop-types';
-export default class ImageGalleryList extends Component {
-  static propTypes = {
-    images: PropTypes.arrayOf(PropTypes.shape).isRequired,
-    showImages: PropTypes.func.isRequired,
-    handleOpenModal: PropTypes.func.isRequired,
-  };
+export default function ImageGalleryList({
+  images,
+  trackScroll,
+  handleOpenModal,
+}) {
+  const { gallery } = s;
 
-  componentDidMount() {
-    const { trackScroll } = this.props;
+  useEffect(() => {
     window.addEventListener('scroll', trackScroll);
-  }
+    return window.removeEventListener('scroll', trackScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  componentWillUnmount() {
-    const { trackScroll } = this.props;
-    window.removeEventListener('scroll', trackScroll);
-  }
-
-  render() {
-    const { images } = this.props;
-    const { gallery } = s;
-    return (
-      <>
-        <ul className={gallery} onClick={this.props.handleOpenModal}>
-          {images &&
-            images.map(image => (
-              <ImageGalleryItem key={image.id} image={image} />
-            ))}
-        </ul>
-      </>
-    );
-  }
+  return (
+    <ul className={gallery} onClick={handleOpenModal}>
+      {images &&
+        images.map(image => <ImageGalleryItem key={image.id} image={image} />)}
+    </ul>
+  );
 }
+
+ImageGalleryList.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.shape).isRequired,
+  showImages: PropTypes.func.isRequired,
+  handleOpenModal: PropTypes.func.isRequired,
+};
